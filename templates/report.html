@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            overflow: hidden;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        img {
+            max-width: 150px; /* Resize image */
+            max-height: 150px; /* Resize image */
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .actions {
+            text-align: center;
+        }
+        .vertical-table {
+            display: table;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .vertical-table div {
+            display: table-row;
+        }
+        .vertical-table div > div {
+            display: table-cell;
+            padding: 10px;
+            vertical-align: top;
+        }
+        .vertical-table div > div:first-child {
+            font-weight: bold;
+            width: 25%;
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Report</h1>
+        <div class="vertical-table">
+            <div>
+                <div>Name</div>
+                <div>{{ user.name }}</div>
+            </div>
+            <div>
+                <div>Email</div>
+                <div>{{ user.email }}</div>
+            </div>
+            <div>
+                <div>Model Output</div>
+                <div>{{ user.model_output }}</div>
+            </div>
+            <div>
+                <div>Confidence</div>
+                <div>{{ user.confidence }}%</div>
+            </div>
+            <div>
+                <div>Image</div>
+                <div><img src="data:image/jpeg;base64,{{ image }}" alt="User Image"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

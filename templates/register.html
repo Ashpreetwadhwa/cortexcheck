@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Register</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Center all the content */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+      margin: 0;
+    }
+
+    /* Style the container */
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form-group label {
+      color: #555;
+    }
+
+    .btn-custom {
+      margin-top: 20px;
+      font-size: 1em;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-dark-custom {
+      background-color: #1abc9c;
+    }
+
+    .btn-dark-custom:hover {
+      background-color: #16a085;
+    }
+
+    .btn-link-custom {
+      margin-top: 10px;
+      color: #1abc9c;
+    }
+
+    .btn-link-custom:hover {
+      color: #16a085;
+    }
+
+    /* Style the photo preview box */
+    #photo-preview {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #photo-preview img {
+      max-width: 100%;
+      max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Register</h2>
+    <form action="/register" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input type="text" class="form-control" id="name" placeholder="Enter name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="pwd">Password:</label>
+          <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pwd" required>
+        </div>
+        <div class="form-group">
+          <label for="photo-upload">Upload a photo:</label>
+          <input type="file" class="form-control" id="photo-upload" name="photo-upload" accept="image/*" onchange="previewPhoto(event)">
+          <div id="photo-preview"></div>
+        </div>
+        <button type="submit" class="btn btn-dark-custom btn-custom">Submit</button>
+        <a href="/login" class="btn btn-link-custom">Login</a>
+    </form>
+</div>
+
+<script>
+  function previewPhoto(event) {
+    // Get the uploaded photo and create a URL for it
+    const file = event.target.files[0];
+    const url = URL.createObjectURL(file);
+
+    // Create an <img> element to display the photo
+    const img = document.createElement("img");
+    img.src = url;
+
+    // Add the <img> element to the preview container
+    const previewContainer = document.getElementById("photo-preview");
+    previewContainer.innerHTML = "";
+    previewContainer.appendChild(img);
+  }
+</script>
+
+</body>
+</html>
+
