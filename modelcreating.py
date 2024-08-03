@@ -1,23 +1,39 @@
-import cv2
-import os
+import dagshub
+import mlflow
+import mlflow.keras
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from pathlib import Path
+
 from keras.preprocessing import image
-from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from keras.utils import normalize, to_categorical
-import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten
-from keras.callbacks import EarlyStopping
+from pathlib import Path
 
-# Directory setup
+# Initialize DagsHub
+dagshub.init(repo_owner='Ashpreetwadhwa', repo_name='cortexcheck', mlflow=True)
+
+
+# Define model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(32, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(32, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Flatten(),
+    Dense(64, activation='relu'),
+    Dropout(0.5),
+    Dense(2, activation='softmax')  # Two output neurons for categorical classification
+])
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+
+# Load and preprocess data (example code, adjust as needed)
 Directory = Path('Dataset/')
 labels_dict = {"no": 0, "yes": 1}
-
-# Load and preprocess data
 image_data = []
 labels = []
 for i in Directory.glob("*"):
@@ -29,78 +45,30 @@ for i in Directory.glob("*"):
         image_data.append(img_array)
         labels.append(labels_dict[label])
 
-# Convert to numpy arrays and normalize
 labels = np.array(labels)
-image_data = np.array(image_data, dtype='float32') / 255.0
+image_data = np.array(image_data, dtype='uint8') / 255
 
-# Split data
-x_train, x_test, y_train, y_test = train_test_split(image_data, labels, test_size=0.2, random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(image_data, labels, test_size=0.2,shuffle=True,stratify=labels)
+x_train = normalize(x_train, axis=1)
+x_test = normalize(x_test, axis=1)
+y_train = to_categorical(y_train, num_classes=2)
+y_test = to_categorical(y_test, num_classes=2)
 
-# Data augmentation
-datagen = ImageDataGenerator(
-    rotation_range=20,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    shear_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True,
-    fill_mode='nearest'
-)
-datagen.fit(x_train)
+#
 
-# Model architecture
-model = Sequential()
+# Train the model
+model.fit(x_train, y_train, batch_size=16, epochs=10, validation_data=(x_test, y_test), shuffle=True)
+# Save the model using MLflow
+with mlflow.start_run():
+    history = model.fit(x_train, y_train, batch_size=16, epochs=10, validation_data=(x_test, y_test), shuffle=False)
 
-model.add(Conv2D(32, (3, 3), input_shape=(64, 64, 3), kernel_regularizer=tf.keras.regularizers.l2(0.001)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+    # Log parameters
+    mlflow.log_param('batch_size', 16)
+    mlflow.log_param('epochs', 10)
 
-model.add(Conv2D(64, (3, 3), kernel_initializer='he_uniform', kernel_regularizer=tf.keras.regularizers.l2(0.001)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Conv2D(128, (3, 3), kernel_initializer='he_uniform', kernel_regularizer=tf.keras.regularizers.l2(0.001)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Flatten())
-model.add(Dense(128, kernel_regularizer=tf.keras.regularizers.l2(0.001)))
-model.add(Activation("relu"))
-model.add(Dropout(0.5))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
-
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-# Early stopping
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
-
-# Train the model with data augmentation
-history = model.fit(datagen.flow(x_train, y_train, batch_size=16),
-                    epochs=50,
-                    validation_data=(x_test, y_test),
-                    callbacks=[early_stopping],
-                    shuffle=True)
-
-# Save the model
-model.save("BrainTumorImproved.h5")
-
-# Plot training history
-plt.figure(figsize=(12, 6))
-plt.subplot(1, 2, 1)
-plt.plot(history.history['accuracy'], label='Train Accuracy')
-plt.plot(history.history['val_accuracy'], label='Val Accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
-plt.title('Accuracy')
-
-plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'], label='Train Loss')
-plt.plot(history.history['val_loss'], label='Val Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-plt.title('Loss')
-
-plt.show()
+    # Log metrics
+    mlflow.log_metric('train_accuracy', history.history['accuracy'][-1])
+    mlflow.log_metric('train_loss', history.history['loss'][-1])
+    mlflow.log_metric('val_accuracy', history.history['val_accuracy'][-1])
+    mlflow.log_metric('val_loss', history.history['val_loss'][-1])
+model.save("model.h5")
