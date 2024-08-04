@@ -1,4 +1,4 @@
-from flask import request, Flask, render_template, redirect, session, url_for, send_from_directory
+from flask import request, Flask, render_template, redirect, session, url_for, send_from_directory,flash
 import os
 import uuid
 from Registerclass import *
@@ -32,8 +32,10 @@ def login():
         if userval and userval.check_password(password):
             session['name']=userval.name
             session['email']=userval.email
+            session['id']=userval.id
             return redirect('/dashboard')
         else:
+            flash("Credentials Wrong",'Danger')
             return render_template('login.html',error='invalid user')
     return render_template('login.html')
 
@@ -72,7 +74,48 @@ def logout():
     return render_template('login.html')
 
 
-import os
+@app.route('/update', methods=['GET', 'POST'])
+def update():
+    user_id = session['id']
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        if 'image' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+        file = request.files['image']
+
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file:
+            # Fetch the details of the old image
+            old_image_filename = user.image
+            old_image_path = os.path.join(app.config['UPLOAD_FOLDER'], old_image_filename)
+
+            # Generate a new filename and save the new image
+            filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+
+            output,confidence = predict_with_confidence(file_path)
+            user.output=output
+            user.confidence=confidence
+            # Update the user's image filename in the database
+            user.image= filename
+            db.session.commit()
+
+            # Delete the old image file from the filesystem
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+
+            flash(f'Image successfully updated. Prediction: {output} with confidence {confidence}')
+            return redirect(url_for('dashboard'))
+
+    return render_template('update.html', user=user)
+
 
 
 @app.route('/delete', methods=['POST'])

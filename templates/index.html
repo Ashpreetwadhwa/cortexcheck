@@ -21,10 +21,17 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 20px;
         }
         h1 {
             color: #333;
             margin-bottom: 30px;
+        }
+        h3 {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
         }
         button {
             background-color: #4CAF50;
@@ -50,6 +57,9 @@
 <body>
     <div class="container">
         <h1>CortexCheck</h1>
+        <h3>
+            CortexCheck is a web application designed to assist users by providing predictions for brain MRI images. Users can upload their MRI images during registration, and upon logging in, they receive model prediction results. The model has been developed using convolutional neural networks (CNNs) to analyze the MRI images and provide a prediction on the likelihood of a brain tumor. The project leverages TensorFlow and Keras for model building and training, and DagsHub with MLflow for tracking experiments and metrics.
+        </h3>
         <div class="actions">
             <a href="/login"><button>Login</button></a>
             <a href="/register"><button>Register</button></a>

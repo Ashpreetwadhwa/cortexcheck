@@ -9,7 +9,7 @@ class User(db.Model):
     password=db.Column(db.String(100),nullable=False)
     image=db.Column(db.String(100), nullable=False)
     output = db.Column(db.String(100), nullable=False)
-    confidence= db.Column(db.Integer, nullable=False)
+    confidence= db.Column(Numeric(precision=4, scale=2))
     def __init__(self,email,password,name,image,output,confidence):
         self.name=name
         self.email=email

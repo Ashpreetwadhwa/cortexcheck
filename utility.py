@@ -23,6 +23,6 @@ def predict_with_confidence(file):
         class_label='Yes'
 
 
-    confidence = random.uniform(0.7,0.98)
+    confidence = round(random.uniform(0.7,0.98),2)
 
     return class_label, confidence
